@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">半成品条码打印</string>
+
+    <string name="printer1">单张打印</string>
+    <string name="printer2">多张打印</string>
+    <string name="printer3">返回</string>
+    <string name="text1">单据:</string>
+    <string name="name1">供应商:</string>
+    <string name="ok">确认</string>
+    <string name="no">退出</string>
+
+    <string name="Lifnr">供应商:</string>
+    <string name="Zlinecode">线别:</string>
+    <string name="Zbc">班别:</string>
+    <string name="IZipcode">托盘编码:</string>
+    <string name="werks">工厂:</string>
+    <string name="werksList">请选择工厂:</string>
+    <string name="Zkurno">客流码:</string>
+    <string name="EName1">选择客流码名称</string>
+    <string name="Matnr">物料:</string>
+    <string name="Zlichn">版本:</string>
+    <string name="Zgrdate">生产日期:</string>
+    <string name="Zproddate">入库日期:</string>
+    <string name="Zcupno">批次编号:</string>
+    <string name="Znum">单据号:</string>
+    <string name="Menge">数量:</string>
+    <string name="Meins">请选择单位</string>
+
+    <string name="printer">打印</string>
+    <string name="clean">清空</string>
+    <string name="exit">退出</string>
+    <string name="cancel">取消</string>
+
+    <string name="cancle">取消</string>
+    <string name="title">请选择时间</string>
+    <string name="commit">确定</string>
+    <string name="year">年</string>
+    <string name="month">月</string>
+    <string name="day">日</string>
+    <string name="hour">时</string>
+    <string name="minute">分</string>
+
+    <string name="select_date">选择日期</string>
+    <string name="current_date">当前日期</string>
+    <string name="select_time">选择时间</string>
+    <string name="current_time">当前时间</string>
+
+</resources>
