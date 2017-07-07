@@ -20,10 +20,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cxg.blueboothpinter2.R;
-import com.cxg.blueboothpinter2.application.XPPApplication;
 import com.cxg.blueboothpinter2.pojo.Ztwm004;
 import com.cxg.blueboothpinter2.query.DataProviderFactory;
 import com.cxg.blueboothpinter2.utils.DatePicker;
+import com.cxg.blueboothpinter2.utils.ExitApplication;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  */
 public class BlueBoothPinterActivity extends AppCompatActivity {
 
-    private TextView IZipcode, EMaktx, Charg;
+    private TextView IZipcode, EMaktx, Charg, EName1;
     private Button btnpost, btnpost1, printer, exit;
     private EditText Werks, Zkurno, Zbc, Matnr, Zproddate, Menge, Meins, Zgrdate, Zlinecode;
     private List<Ztwm004> ztwm004list;
@@ -63,6 +63,8 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
         selectDatePicker();
         //数据
         initData();
+
+        ExitApplication.getInstance().addActivity(this);
     }
 
     /**
@@ -102,6 +104,7 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
         EMaktx = (TextView) findViewById(R.id.EMaktx);
         //ERP编码
         Charg = (TextView) findViewById(R.id.Charg);
+        EName1 = (TextView) findViewById(R.id.EName1);
 
         findViewById(R.id.clean).setOnClickListener(BtnClicked);//清空按钮
         findViewById(R.id.printer).setOnClickListener(BtnClicked);//打印按钮
@@ -118,26 +121,43 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
      * version: 1.0
      */
     public void initData() {
-        //页面UI更新
-        ztwm004list = new ArrayList<>();
-        if (ztwm004list.size() != 0) {
-            for (Ztwm004 ztwm004 : ztwm004list) {
-                Werks.setText(ztwm004.getWerks());
-                Zkurno.setText(ztwm004.getZkurno());
-                Zbc.setText(ztwm004.getZbc());
-                Zlinecode.setText(ztwm004.getZlinecode());
-                IZipcode.setText(ztwm004.getZipcode());
-                Matnr.setText(ztwm004.getMatnr());
-                Zproddate.setText(ztwm004.getZproddate());
-                Menge.setText(ztwm004.getMenge());
-                Meins.setText(ztwm004.getMeins());
-                Zgrdate.setText(ztwm004.getZgrdate());
-                EMaktx.setText(ztwm004.getEMaktx());
-                Charg.setText(ztwm004.getCharg());
+        Bundle bundle = this.getIntent().getExtras();
+        if (bundle != null) {
+            Werks.setText(bundle.getString("Werks"));
+            Zkurno.setText(bundle.getString("Zkurno"));
+            Zbc.setText(bundle.getString("Zbc"));
+            Zlinecode.setText(bundle.getString("Zlinecode"));
+            IZipcode.setText(bundle.getString("IZipcode"));
+            Matnr.setText(bundle.getString("Matnr"));
+            Zproddate.setText(bundle.getString("Zproddate"));
+            Menge.setText(bundle.getString("Menge"));
+            Meins.setText(bundle.getString("Meins"));
+            EMaktx.setText(bundle.getString("EMaktx"));
+            EName1.setText(bundle.getString("EName1"));
+            Charg.setText(bundle.getString("Charg"));
+        } else {
+            //页面UI更新
+            ztwm004list = new ArrayList<>();
+            if (ztwm004list.size() != 0) {
+                for (Ztwm004 ztwm004 : ztwm004list) {
+                    Werks.setText(ztwm004.getWerks());
+                    Zkurno.setText(ztwm004.getZkurno());
+                    Zbc.setText(ztwm004.getZbc());
+                    Zlinecode.setText(ztwm004.getZlinecode());
+                    IZipcode.setText(ztwm004.getZipcode());
+                    Matnr.setText(ztwm004.getMatnr());
+                    Zproddate.setText(ztwm004.getZproddate());
+                    Menge.setText(ztwm004.getMenge());
+                    Meins.setText(ztwm004.getMeins());
+                    Zgrdate.setText(ztwm004.getZgrdate());
+                    EMaktx.setText(ztwm004.getEMaktx());
+                    Charg.setText(ztwm004.getCharg());
+                    EName1.setText(ztwm004.getEName1());
+                }
             }
         }
         //加载数据获取单位
-        if(map.size() == 0){
+        if (map.size() == 0) {
             new getMeinsTask().execute();
         }
     }
@@ -353,6 +373,12 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), "请输入物料码!", Toast.LENGTH_SHORT).show();
                         break;
                     }
+                    if (!"".equals(EMaktx.getText().toString().trim())) {
+                        ztwm004_1.setEMaktx(EMaktx.getText().toString().trim());
+                    } else {
+                        Toast.makeText(getApplicationContext(), "请输入物料码查询对应的物料名称!", Toast.LENGTH_SHORT).show();
+                        break;
+                    }
                     if (!"".equals(Zgrdate.getText().toString().trim())) {
                         ztwm004_1.setZgrdate(Zgrdate.getText().toString().trim());
                     } else {
@@ -429,11 +455,11 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                     new getZipcodeTask().execute(ztwm004_1);
 
                     break;
-                case R.id.exit :
-                    XPPApplication.exit(BlueBoothPinterActivity.this);
+                case R.id.exit:
+                    ExitApplication.getInstance().exit();
                     Toast.makeText(getApplicationContext(), "退出应用", Toast.LENGTH_SHORT).show();
                     break;
-                case R.id.clean :
+                case R.id.clean:
                     Werks.setText(null);
                     Zkurno.setText(null);
                     Zbc.setText(null);
@@ -444,8 +470,8 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                     Meins.setText(null);
                     EMaktx.setText(null);
                     break;
-                case R.id.printer :
-                    if ("".equals(IZipcode.getText().toString().trim().toString())) {
+                case R.id.printer:
+                    if ("".equals(IZipcode.getText().toString().trim())) {
                         Toast.makeText(getApplicationContext(), "无打印数据，请重新操作！", Toast.LENGTH_SHORT).show();
                         break;
                     }
@@ -480,6 +506,8 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                     ztwm004.putString("Zgrdate", Zgrdate.getText().toString().trim());
                     //物料名称
                     ztwm004.putString("EMaktx", EMaktx.getText().toString().trim());
+                    //设置客户名
+                    ztwm004.putString("EName1",EName1.getText().toString().trim());
 
                     intent.putExtras(ztwm004);
 
