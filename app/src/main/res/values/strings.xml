@@ -2,7 +2,7 @@
     <string name="app_name">半成品条码打印</string>
 
     <string name="printer1">单张打印</string>
-    <string name="printer2">多张打印</string>
+    <string name="printer2">打印</string>
     <string name="printer3">返回</string>
     <string name="text1">单据:</string>
     <string name="name1">供应商:</string>
@@ -23,7 +23,8 @@
     <string name="Zproddate">入库日期:</string>
     <string name="Zcupno">批次编号:</string>
     <string name="Znum">单据号:</string>
-    <string name="Menge">数量:</string>
+    <string name="Menge">标准托盘数量:</string>
+    <string name="ILgmng">标签数量:</string>
     <string name="Meins">请选择单位</string>
 
     <string name="printer">打印</string>

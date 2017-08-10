@@ -91,6 +91,11 @@ public class WebService implements IDataProvider {
                 } else {
                     ztwm004.setEMaktx("");
                 }
+                if (!anyType.equals(list.get(1).toString())) {
+                    ztwm004.setMeins(list.get(1).toString());
+                } else {
+                    ztwm004.setMeins("");
+                }
                 ztwm004List.add(ztwm004);
             }
             return ztwm004List;
@@ -108,6 +113,7 @@ public class WebService implements IDataProvider {
             //请求的参数对象
             Ztwm004 properties = new Ztwm004();
 
+            properties.setILgmng(ztwm004.getILgmng());
             properties.setMatnr(ztwm004.getMatnr());
             properties.setMeins(ztwm004.getMeins());//单位
             properties.setMenge(ztwm004.getMenge());//数量
@@ -116,19 +122,22 @@ public class WebService implements IDataProvider {
             properties.setZgrdate(ztwm004.getZgrdate());
             properties.setZkurno(ztwm004.getZkurno());
             properties.setZlinecode(ztwm004.getZlinecode());
+            properties.setIZlocco(ztwm004.getZcupno());//客流码
             properties.setZproddate(ztwm004.getZproddate());
+            properties.setItZipcode(ztwm004.getItZipcode());
 
             //通过webservice获取到的返回值
-            List<Object> list = WebServiceUtils.callWebServiceFor002(WebServiceUtils.URL_002, WebServiceUtils.METHOD_NAME_002, properties);
+            List<Object> list = WebServiceUtils.callWebServiceFor002(WebServiceUtils.URL_007, WebServiceUtils.METHOD_NAME_007, properties);
+            Ztwm004 ztwm004_002 = new Ztwm004();
+            List<Ztwm004> ztwm004List_001 = new ArrayList<>();
             if (list.size()!=0) {
-                Ztwm004 ztwm004_002 = new Ztwm004();
-                //ERP编码
-                ztwm004_002.setCharg(list.get(0).toString());
-                //生成的托盘编码
-                ztwm004_002.setZipcode(list.get(2).toString());
-
-                ztwm004List.add(ztwm004_002);
+                for (int i = 0; i < list.size(); i++) {
+                    ztwm004List_001.add((Ztwm004)list.get(i));
+                }
+                ztwm004_002.setZtwm004s(ztwm004List_001);
             }
+            ztwm004List.add(ztwm004_002);
+
             return ztwm004List;
         } catch (Exception e) {
             e.printStackTrace();

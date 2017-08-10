@@ -9,13 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.cxg.blueboothpinter2.R;
-import com.cxg.blueboothpinter2.application.XPPApplication;
 import com.cxg.blueboothpinter2.pojo.Ztwm004;
 import com.cxg.blueboothpinter2.utils.Bluetooth;
 import com.cxg.blueboothpinter2.utils.ExitApplication;
@@ -28,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 蓝牙打印首页
@@ -42,8 +42,6 @@ public class BoothActivity extends AppCompatActivity {
     public StatusBox statusBox;
     /*盒子信息*/
     public MessageBox megBox;
-    /*编辑张数*/
-    public EditText tv1;
 
     private Ztwm004 ztwm004;
 
@@ -55,8 +53,6 @@ public class BoothActivity extends AppCompatActivity {
         Button Button1 = (Button) findViewById(R.id.button1);
         statusBox = new StatusBox(this, Button1);
         megBox = new MessageBox(this);
-        tv1 = (EditText) findViewById(R.id.editText);
-        tv1.setText("1");
         SelectedBDAddress = "";
 
         //新页面接收数据
@@ -78,13 +74,6 @@ public class BoothActivity extends AppCompatActivity {
             }
         });
 
-        /*单张打印*/
-        Button Button2 = (Button) findViewById(R.id.button2);
-        Button2.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View arg0) {
-                Print2(SelectedBDAddress, ztwm004);
-            }
-        });
 
         /*返回*/
         Button Button3 = (Button) findViewById(R.id.button3);
@@ -94,7 +83,7 @@ public class BoothActivity extends AppCompatActivity {
                 //用Bundle携带数据
                 Bundle ztwm004_001 = new Bundle();
 
-                ztwm004_001.putString("IZipcode", ztwm004.getZipcode());
+                ztwm004_001.putString("IZipcode", ztwm004.getZipcodelist().get(0) + ", ...");
                 ztwm004_001.putString("Charg", ztwm004.getCharg());
                 ztwm004_001.putString("Zproddate", ztwm004.getZproddate());
                 ztwm004_001.putString("Werks", ztwm004.getWerks());
@@ -116,7 +105,6 @@ public class BoothActivity extends AppCompatActivity {
         });
 
         ExitApplication.getInstance().addActivity(this);
-        XPPApplication.closeKeyboard(tv1,this);
     }
 
     /**
@@ -126,7 +114,44 @@ public class BoothActivity extends AppCompatActivity {
      * @return ztwm004
      */
     private Ztwm004 dataFmort(Bundle bundle) {
-        String IZipcode = bundle.getString("IZipcode");
+        List<String> localList1 = extractMessageByRegular(bundle.getString("zipcodeList"));
+        List<String> localArrayList1 = new ArrayList<>();
+        String[] arrayOfString1 = new String[0];
+        for (int i = 0; ; i++) {
+            int j = localList1.size();
+            if (i >= j) {
+                break;
+            }
+            arrayOfString1 = (localList1.get(i)).split(", ");
+        }
+        int k = arrayOfString1.length;
+        for (int m = 0; m < k; m++) {
+            localArrayList1.add(arrayOfString1[m]);
+        }
+
+        List<String> localList2 = extractMessageByRegular(bundle.getString("chargList"));
+        List<String> localArrayList2 = new ArrayList<>();
+        String[] arrayOfString2 = new String[0];
+        for (int n = 0; ; n++) {
+            int i1 = localList2.size();
+            if (n >= i1) {
+                break;
+            }
+            arrayOfString2 = (localList2.get(n)).split(", ");
+        }
+        int i2 = arrayOfString2.length;
+        for (int i3 = 0; i3 < i2; i3++) {
+            localArrayList2.add(arrayOfString2[i3]);
+        }
+        String str1 = "";
+        for (int i4 = 0; ; i4++) {
+            int i5 = localArrayList2.size();
+            if (i4 >= i5) {
+                break;
+            }
+            str1 = localArrayList2.get(0);
+        }
+        String Lgmng = bundle.getString("Lgmng");
         String Werks = bundle.getString("Werks");
         String Zkurno = bundle.getString("Zkurno");
         String Zbc = bundle.getString("Zbc");
@@ -134,22 +159,22 @@ public class BoothActivity extends AppCompatActivity {
         String Matnr = bundle.getString("Matnr");
         String Menge = bundle.getString("Menge");
         String Meins = bundle.getString("Meins");
-        String Charg = bundle.getString("Charg");
         String Zproddate = bundle.getString("Zproddate");//生产日期
         String Zgrdate = bundle.getString("Zgrdate");//入库时间
         String EMaktx = bundle.getString("EMaktx");
         String EName1 = bundle.getString("EName1");
 
         ztwm004 = new Ztwm004();
-        ztwm004.setZipcode(IZipcode);
+        ztwm004.setZipcodelist(localArrayList1);
         ztwm004.setWerks(Werks);
         ztwm004.setZkurno(Zkurno);
         ztwm004.setZbc(Zbc);
         ztwm004.setZlinecode(Zlinecode);
         ztwm004.setMatnr(Matnr);
+        ztwm004.setILgmng(Lgmng);
         ztwm004.setMenge(Menge);
         ztwm004.setMeins(Meins);
-        ztwm004.setCharg(Charg);
+        ztwm004.setCharg(str1);
         ztwm004.setZproddate(Zproddate);
         ztwm004.setZgrdate(Zgrdate);
         ztwm004.setEMaktx(EMaktx);
@@ -157,6 +182,22 @@ public class BoothActivity extends AppCompatActivity {
 
         return ztwm004;
     }
+
+    /**
+     * description:获取上一个Activity的list绑定值
+     * author: xg.chen
+     * date: 2017/8/3 13:21
+     * version: 1.0
+     */
+    public static List<String> extractMessageByRegular(String paramString) {
+        ArrayList localArrayList = new ArrayList();
+        Matcher localMatcher = Pattern.compile("(\\[[^\\]]*\\])").matcher(paramString);
+        while (localMatcher.find()) {
+            localArrayList.add(localMatcher.group().substring(1, -1 + localMatcher.group().length()));
+        }
+        return localArrayList;
+    }
+
 
     /**
      * 循环多张打印
@@ -172,57 +213,23 @@ public class BoothActivity extends AppCompatActivity {
             return;
         }
         // create page
-        String name = tv1.getText().toString();
-        int num = Integer.parseInt(name);
+        List localList = ztwm004.getZipcodelist();
         lable_sdk.SelectPage(0);
         lable_sdk.ClearPage();
         lable_sdk.SelectPage(1);
         lable_sdk.ClearPage();
         lable_sdk.SetPageSize(83 * 8, 72 * 8);
         lable_sdk.ErrorConfig(true);
-        for (int i = 1; i <= num; i++) {
-            DrawContent(i, ztwm004);// content
-            lable_sdk.PrintPage(0x04, 150, false);
+        for (int i = 0; i < localList.size(); i++) {
+            String str = (String) localList.get(i);
+            DrawContent(ztwm004, str);// content
+            lable_sdk.PrintPage(0x04, 10, false);
             lable_sdk.ClearPage();
         }
         Bluetooth.close();
         statusBox.Close();
     }// print1
 
-    /**
-     * 单张打印
-     *
-     * @param BDAddress 蓝牙打印地址
-     * @param ztwm004   打印数据
-     */
-    private void Print2(String BDAddress, Ztwm004 ztwm004) {
-        statusBox.Show("正在打印...");
-        if (!Bluetooth.OpenPrinter(BDAddress)) {
-            showMessage(Bluetooth.ErrorMessage);
-            Bluetooth.close();
-            statusBox.Close();
-            return;
-        }
-        // create page
-        lable_sdk.SelectPage(0);
-        lable_sdk.ClearPage();
-        lable_sdk.SelectPage(1);
-        lable_sdk.ClearPage();
-        lable_sdk.SetPageSize(83 * 8, 72 * 8);
-        lable_sdk.ErrorConfig(true);
-        System.out.println("=====>" + ztwm004);
-        DrawContent(1, ztwm004);// content
-        lable_sdk.PrintPage(0x04, 50, false);
-        lable_sdk.SelectPage(0);
-        lable_sdk.ClearPage();
-        lable_sdk.SelectPage(1);
-        lable_sdk.ClearPage();
-        if (zp_realtime_status(10000) != 0) {
-            showMessage(Bluetooth.ErrorMessage);
-        }
-        Bluetooth.close();
-        statusBox.Close();
-    }
 
     /**
      * 打印数据输出时间设置
@@ -253,32 +260,33 @@ public class BoothActivity extends AppCompatActivity {
 
     /**
      * 页面布局
-     *
-     * @param num     页数
-     * @param ztwm004 打印对象
      */
-    private void DrawContent(int num, Ztwm004 ztwm004) {
-        lable_sdk.DrawText(7 * 8, 8 * 8, "客户:" + ztwm004.getZkurno(), 0x00, 0x0);
-        zp_realtime_status(1000);
-        lable_sdk.DrawText(7 * 8, 12 * 8, "客户名称:", 0, 0);
-        zp_realtime_status(1000);
-        lable_sdk.DrawText(7 * 8, 16 * 8, "线别:" + ztwm004.getZlinecode(), 0, 0);
-        zp_realtime_status(1000);
-        lable_sdk.DrawText(7 * 8, 20 * 8, "班别:" + ztwm004.getZbc(), 0, 0);
-        zp_realtime_status(1000);
-        lable_sdk.DrawText(7 * 8, 24 * 8, "物料编号:" + ztwm004.getMatnr(), 0, 0);
-        zp_realtime_status(1000);
-        lable_sdk.DrawText(7 * 8, 28 * 8, ztwm004.getEMaktx(), 0, 0);
-        zp_realtime_status(1000);
-        lable_sdk.DrawText(7 * 8, 31 * 8, "生产日期:" + ztwm004.getZgrdate(), 0, 0);
-        zp_realtime_status(1000);
-        lable_sdk.DrawText(7 * 8, 35 * 8, "入库日期:" + ztwm004.getZproddate(), 0, 0);
-        zp_realtime_status(1000);
-        lable_sdk.DrawText(7 * 8, 39 * 8, "ERP批次号:" + ztwm004.getCharg(), 0, 0);
-        zp_realtime_status(1000);
-        lable_sdk.DrawText(7 * 8, 43 * 8, "数量:" + ztwm004.getMenge(), 0, 0);
-        zp_realtime_status(1000);
-        lable_sdk.DrawCode1D(7 * 8, 47 * 8, ztwm004.getZipcode(), 0x1, 0x03, (16 * 8));
+    private void DrawContent(Ztwm004 paramZtwm004, String paramString) {
+        try {
+            lable_sdk.DrawText(40, 64, "客户:" + paramZtwm004.getZkurno(), 2, 2);
+            zp_realtime_status(1000);
+            lable_sdk.DrawText(40, 128, "班别:" + paramZtwm004.getZbc(), 0, 0);
+            zp_realtime_status(1000);
+            lable_sdk.DrawText(40, 160, "物料编号:" + paramZtwm004.getMatnr(), 2, 1);
+            zp_realtime_status(1000);
+            lable_sdk.DrawText(40, 192, paramZtwm004.getEMaktx(), 2, 1);
+            zp_realtime_status(1000);
+            lable_sdk.DrawText(40, 224, "生产日期:" + paramZtwm004.getZgrdate(), 0, 0);
+            zp_realtime_status(1000);
+            lable_sdk.DrawText(40, 256, "入库日期:" + paramZtwm004.getZproddate(), 0, 0);
+            zp_realtime_status(1000);
+            lable_sdk.DrawText(40, 288, "ERP批次号:" + paramZtwm004.getCharg(), 0, 0);
+            zp_realtime_status(1000);
+            lable_sdk.DrawText(40, 320, "数量:" + paramZtwm004.getILgmng() + " " + paramZtwm004.getMeins(), 0, 0);
+            zp_realtime_status(1000);
+            lable_sdk.DrawCode1D(96, 352, paramString, 1, 3, 80);
+            zp_realtime_status(1000);
+            lable_sdk.DrawText(160, 440, paramString, 0, 0);
+            zp_realtime_status(1000);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }// DrawContent
 
     /**

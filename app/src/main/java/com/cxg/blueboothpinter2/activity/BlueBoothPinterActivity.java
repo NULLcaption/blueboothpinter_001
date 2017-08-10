@@ -8,9 +8,12 @@ import android.graphics.drawable.AnimationDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,14 +46,27 @@ import java.util.regex.Pattern;
  */
 public class BlueBoothPinterActivity extends AppCompatActivity {
 
-    private TextView IZipcode, EMaktx, Charg, EName1;
-    private Button btnpost, btnpost1, printer, exit;
-    private EditText Werks, Zkurno, Zbc, Matnr, Zproddate, Menge, Meins, Zgrdate, Zlinecode;
-    private List<Ztwm004> ztwm004list;
-    private Dialog waitingDialog;
+    private TextView IZipcode;
+    private EditText Lgmng;
+    private EditText Matnr;
+    private EditText Meins;
+    private EditText Menge;
+    private EditText Werks;
+    private EditText Zbc;
+    private EditText Zgrdate;
+    private EditText Zkurno;
+    private EditText Zlinecode;
+    private EditText Zproddate;
+    private TextView Charg;
+    private TextView EMaktx;
+    private TextView EName1;
+    private List<Ztwm004> callbackList;
+    private Map<String, String> map = new HashMap();
     private Dialog overdialog;
-    private Map<String, String> map = new HashMap<>();
-    private DatePicker zproddateDatePicker, zgrdateDatePicker;
+    private Dialog waitingDialog;
+    private DatePicker zgrdateDatePicker;
+    private DatePicker zproddateDatePicker;
+    private List<Ztwm004> ztwm004list;
 
 
     @Override
@@ -60,9 +76,11 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
         //视图
         initView();
         //时间选择控件
-        selectDatePicker();
+        //selectDatePicker();
         //数据
         initData();
+
+        Werks.setText("湖州工厂");
 
         ExitApplication.getInstance().addActivity(this);
     }
@@ -76,9 +94,9 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
     public void initView() {
         //工厂
         Werks = (EditText) findViewById(R.id.werks);
-        Werks.setOnClickListener(BtnClicked);
-
+        //客流码
         Zkurno = (EditText) findViewById(R.id.Zkurno);
+        Zkurno.setInputType(InputType.TYPE_NULL);
         //班别
         Zbc = (EditText) findViewById(R.id.Zbc);
         Zbc.setOnClickListener(BtnClicked);
@@ -89,10 +107,14 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
         IZipcode = (TextView) findViewById(R.id.IZipcode);
         //物料编码
         Matnr = (EditText) findViewById(R.id.matnr);
+        Matnr.setInputType(InputType.TYPE_NULL);
+        Matnr.setOnEditorActionListener(EnterListenter);
         //库存日期
         Zproddate = (EditText) findViewById(R.id.Zproddate);
         Zproddate.setOnClickListener(BtnClicked);
-
+        //标准托盘数量
+        Lgmng = (EditText) findViewById(R.id.ILgmng);
+        //标签数量
         Menge = (EditText) findViewById(R.id.Menge);
         //单位
         Meins = (EditText) findViewById(R.id.Meins);
@@ -109,8 +131,6 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
         findViewById(R.id.clean).setOnClickListener(BtnClicked);//清空按钮
         findViewById(R.id.printer).setOnClickListener(BtnClicked);//打印按钮
         findViewById(R.id.exit).setOnClickListener(BtnClicked);//退出按钮
-        findViewById(R.id.btnpost1).setOnClickListener(BtnClicked);//搜索物料名称
-        findViewById(R.id.btnpost).setOnClickListener(BtnClicked);//生成托盘编码
 
     }
 
@@ -130,6 +150,7 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
             IZipcode.setText(bundle.getString("IZipcode"));
             Matnr.setText(bundle.getString("Matnr"));
             Zproddate.setText(bundle.getString("Zproddate"));
+            Lgmng.setText(bundle.getString("Lgmng"));
             Menge.setText(bundle.getString("Menge"));
             Meins.setText(bundle.getString("Meins"));
             EMaktx.setText(bundle.getString("EMaktx"));
@@ -148,6 +169,7 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                     Matnr.setText(ztwm004.getMatnr());
                     Zproddate.setText(ztwm004.getZproddate());
                     Menge.setText(ztwm004.getMenge());
+                    Lgmng.setText(ztwm004.getILgmng());
                     Meins.setText(ztwm004.getMeins());
                     Zgrdate.setText(ztwm004.getZgrdate());
                     EMaktx.setText(ztwm004.getEMaktx());
@@ -156,11 +178,45 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                 }
             }
         }
+
+        //时间选择控件
+        selectDatePicker();
+
         //加载数据获取单位
         if (map.size() == 0) {
             new getMeinsTask().execute();
         }
     }
+
+    private TextView.OnEditorActionListener EnterListenter = new TextView.OnEditorActionListener() {
+        @Override
+        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            switch (v.getId()) {
+                case R.id.matnr:
+                    if (actionId == EditorInfo.IME_ACTION_SEND
+                            || actionId == EditorInfo.IME_ACTION_DONE
+                            || (event != null && KeyEvent.KEYCODE_ENTER == event.getKeyCode()
+                            && KeyEvent.ACTION_DOWN == event.getAction())) {
+                        if (!"".equals(Matnr.getText().toString().trim())) {
+                            // 正则判断下是否输入值为数字
+                            Pattern p2 = Pattern.compile("\\d");
+                            String Matnr1 = Matnr.getText().toString().trim();
+                            Matcher matcher = p2.matcher(Matnr1);
+                            if (matcher.matches()) {
+                                Toast.makeText(getApplicationContext(), "请填写准确的物料码...", Toast.LENGTH_SHORT).show();
+                            }
+                            new getEMaktxTask().execute(Matnr.getText().toString().trim());
+                        } else {
+                            Toast.makeText(getApplicationContext(), "请输入物料码,然后查询即可!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return false;
+        }
+    };
 
     /**
      * 进入时加载单位
@@ -326,141 +382,11 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                     // 日期格式为yyyy-MM-dd
                     zproddateDatePicker.show(Zgrdate.getText().toString());
                     break;
-                case R.id.btnpost1:
-                    if (!"".equals(Matnr.getText().toString().trim().toString())) {
-                        // 正则判断下是否输入值为数字
-                        Pattern p2 = Pattern.compile("\\d");
-                        String Matnr1 = Matnr.getText().toString().trim();
-                        Matcher matcher = p2.matcher(Matnr1);
-                        if (matcher.matches()) {
-                            Toast.makeText(getApplicationContext(), "请填写准确的物料码...", Toast.LENGTH_SHORT).show();
-                            break;
-                        }
-                        new getEMaktxTask().execute(Matnr.getText().toString().trim());
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请输入物料码,然后查询即可!", Toast.LENGTH_SHORT).show();
-                    }
-                    break;
-                //生成托盘编码
-                case R.id.btnpost:
-                    Ztwm004 ztwm004_1 = new Ztwm004();
-                    if (!"".equals(Werks.getText().toString().trim())) {
-                        String string = "湖州工厂";
-                        String string1 = "成都工厂";
-                        String string2 = "天津工厂";
-                        if (string.equals(Werks.getText().toString().trim())) {
-                            ztwm004_1.setWerks("1000");
-                        } else if (string1.equals(Werks.getText().toString().trim())) {
-                            ztwm004_1.setWerks("2000");
-                        } else if (string2.equals(Werks.getText().toString().trim())) {
-                            ztwm004_1.setWerks("3000");
-                        }
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请选择工厂!", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                    if (!"".equals(Matnr.getText().toString().trim())) {
-                        // 正则判断下是否输入值为数字
-                        Pattern p2 = Pattern.compile("\\d");
-                        String Matnr1 = Matnr.getText().toString().trim();
-                        Matcher matcher = p2.matcher(Matnr1);
-                        if (matcher.matches()) {
-                            Toast.makeText(getApplicationContext(), "请填写准确的物料码...", Toast.LENGTH_SHORT).show();
-                            break;
-                        }
-                        ztwm004_1.setMatnr(Matnr.getText().toString().trim());
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请输入物料码!", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                    if (!"".equals(EMaktx.getText().toString().trim())) {
-                        ztwm004_1.setEMaktx(EMaktx.getText().toString().trim());
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请输入物料码查询对应的物料名称!", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                    if (!"".equals(Zgrdate.getText().toString().trim())) {
-                        ztwm004_1.setZgrdate(Zgrdate.getText().toString().trim());
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请选择生产日期!", Toast.LENGTH_SHORT).show();
-                    }
-                    if (!"".equals(Zproddate.getText().toString().trim())) {
-                        ztwm004_1.setZproddate(Zproddate.getText().toString().trim());
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请选择入库日期!", Toast.LENGTH_SHORT).show();
-
-                    }
-                    if (!"".equals(Zlinecode.getText().toString().trim())) {
-                        ztwm004_1.setZlinecode(Zlinecode.getText().toString().trim());
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请选择线别!", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                    if (!"".equals(Zkurno.getText().toString().trim())) {
-                        ztwm004_1.setZkurno("000000");
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请选填写客流码!", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                    //班别
-                    if (!"".equals(Zbc.getText().toString().trim())) {
-                        String string = "白班";
-                        String string1 = "夜班";
-                        if (string.equals(Zbc.getText().toString().trim())) {
-                            ztwm004_1.setZbc("1");
-                        } else if (string1.equals(Zbc.getText().toString().trim())) {
-                            ztwm004_1.setZbc("2");
-                        }
-
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请选择班别!", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                    //数量
-                    if (!"".equals(Menge.getText().toString().trim())) {
-                        // 正则判断下是否输入值为数字
-                        Pattern p2 = Pattern.compile("([1-9]+[0-9]*|0)(\\\\.[\\\\d]+)?");
-                        String Matnr1 = Menge.getText().toString().trim();
-                        Matcher matcher = p2.matcher(Matnr1);
-                        if (matcher.matches()) {
-                            Toast.makeText(getApplicationContext(), "请填写准确的数量...", Toast.LENGTH_SHORT).show();
-                            break;
-                        }
-                        ztwm004_1.setMenge(Menge.getText().toString().trim());
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请填写准确的数量!", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                    //单位
-                    if (!"".equals(Meins.getText().toString().trim())) {
-                        if ("包".equals(Meins.getText().toString().trim())) {
-                            ztwm004_1.setMeins("BAO");
-                        } else if ("套".equals(Meins.getText().toString().trim())) {
-                            ztwm004_1.setMeins("TAO");
-                        } else if ("杯".equals(Meins.getText().toString().trim())) {
-                            ztwm004_1.setMeins("BEI");
-                        } else if ("箱".equals(Meins.getText().toString().trim())) {
-                            ztwm004_1.setMeins("BOX");
-                        } else if ("公斤".equals(Meins.getText().toString().trim())) {
-                            ztwm004_1.setMeins("KG");
-                        } else {
-                            ztwm004_1.setMeins("BOX");
-                        }
-                    } else {
-                        Toast.makeText(getApplicationContext(), "请选择单位!", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-
-                    //生成托盘编码
-                    new getZipcodeTask().execute(ztwm004_1);
-
-                    break;
                 case R.id.exit:
                     ExitApplication.getInstance().exit();
                     Toast.makeText(getApplicationContext(), "退出应用", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.clean:
-                    Werks.setText(null);
                     Zkurno.setText(null);
                     Zbc.setText(null);
                     Zlinecode.setText(null);
@@ -471,59 +397,226 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                     EMaktx.setText(null);
                     break;
                 case R.id.printer:
-                    if ("".equals(IZipcode.getText().toString().trim())) {
-                        Toast.makeText(getApplicationContext(), "无打印数据，请重新操作！", Toast.LENGTH_SHORT).show();
-                        break;
+                    Ztwm004 ztwm004_2 = setZtwm004_001();
+                    try {
+                        new getZipcodeTask().execute(ztwm004_2);
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-
-                    //新建一个显式意图，第一个参数为当前Activity类对象，第二个参数为你要打开的Activity类
-                    Intent intent = new Intent(BlueBoothPinterActivity.this, BoothActivity.class);
-
-                    //用Bundle携带数据
-                    Bundle ztwm004 = new Bundle();
-
-                    //托盘编码
-                    ztwm004.putString("IZipcode", IZipcode.getText().toString().trim());
-                    //ERP编号
-                    ztwm004.putString("Charg", Charg.getText().toString().trim());
-                    //入库时间
-                    ztwm004.putString("Zproddate", Zproddate.getText().toString().trim());
-                    //工厂
-                    ztwm004.putString("Werks", Werks.getText().toString().trim());
-                    //客流码
-                    ztwm004.putString("Zkurno", Zkurno.getText().toString().trim());
-                    //班别
-                    ztwm004.putString("Zbc", Zbc.getText().toString().trim());
-                    //线别
-                    ztwm004.putString("Zlinecode", Zlinecode.getText().toString().trim());
-                    //物料码
-                    ztwm004.putString("Matnr", Matnr.getText().toString().trim());
-                    //数量
-                    ztwm004.putString("Menge", Menge.getText().toString().trim());
-                    //单位转换成汉字
-                    ztwm004.putString("Meins", Meins.getText().toString().trim());
-                    //生产日期
-                    ztwm004.putString("Zgrdate", Zgrdate.getText().toString().trim());
-                    //物料名称
-                    ztwm004.putString("EMaktx", EMaktx.getText().toString().trim());
-                    //设置客户名
-                    ztwm004.putString("EName1",EName1.getText().toString().trim());
-
-                    intent.putExtras(ztwm004);
-
-                    //进入到下一个Activity
-                    startActivity(intent);
-
-                    //Activity过场动画
-                    overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
-
-                    Toast.makeText(getApplicationContext(), "进入到打印页面", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "正在后台生成数据,请稍后!", Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     break;
             }
         }
     };
+
+    /**
+     * description: 设置webservice生成所需的参数
+     * author: xg.chen
+     * date: 2017/8/3 16:32
+     * version: 1.0
+    */
+    public Ztwm004 setZtwm004_001() {
+        Ztwm004 ztwm004_1 = new Ztwm004();
+        try {
+            if (!"".equals(Werks.getText().toString().trim())) {
+                String string = "湖州工厂";
+                String string1 = "成都工厂";
+                String string2 = "天津工厂";
+                if (string.equals(Werks.getText().toString().trim())) {
+                    ztwm004_1.setWerks("1000");
+                } else if (string1.equals(Werks.getText().toString().trim())) {
+                    ztwm004_1.setWerks("2000");
+                } else if (string2.equals(Werks.getText().toString().trim())) {
+                    ztwm004_1.setWerks("3000");
+                }
+            } else {
+                Toast.makeText(getApplicationContext(), "请选择工厂!", Toast.LENGTH_SHORT).show();
+            }
+            if (!"".equals(Matnr.getText().toString().trim())) {
+                // 正则判断下是否输入值为数字
+                Pattern p2 = Pattern.compile("\\d");
+                String Matnr1 = Matnr.getText().toString().trim();
+                Matcher matcher = p2.matcher(Matnr1);
+                if (matcher.matches()) {
+                    Toast.makeText(getApplicationContext(), "请填写准确的物料码...", Toast.LENGTH_SHORT).show();
+                }
+                ztwm004_1.setMatnr(Matnr.getText().toString().trim());
+            } else {
+                Toast.makeText(getApplicationContext(), "请输入物料码!", Toast.LENGTH_SHORT).show();
+            }
+            if (!"".equals(EMaktx.getText().toString().trim())) {
+                ztwm004_1.setEMaktx(EMaktx.getText().toString().trim());
+            } else {
+                Toast.makeText(getApplicationContext(), "请输入物料码查询对应的物料名称!", Toast.LENGTH_SHORT).show();
+            }
+            if (!"".equals(Zgrdate.getText().toString().trim())) {
+                ztwm004_1.setZgrdate(Zgrdate.getText().toString().trim());
+            } else {
+                Toast.makeText(getApplicationContext(), "请选择生产日期!", Toast.LENGTH_SHORT).show();
+            }
+            if (!"".equals(Zproddate.getText().toString().trim())) {
+                ztwm004_1.setZproddate(Zproddate.getText().toString().trim());
+            } else {
+                Toast.makeText(getApplicationContext(), "请选择入库日期!", Toast.LENGTH_SHORT).show();
+
+            }
+            if (!"".equals(Zlinecode.getText().toString().trim())) {
+                ztwm004_1.setZlinecode(Zlinecode.getText().toString().trim());
+            } else {
+                Toast.makeText(getApplicationContext(), "请选择线别!", Toast.LENGTH_SHORT).show();
+            }
+            if (!"".equals(Zkurno.getText().toString().trim())) {
+                ztwm004_1.setZkurno("0000");
+            } else {
+                Toast.makeText(getApplicationContext(), "请选填写客流码!", Toast.LENGTH_SHORT).show();
+            }
+            //班别
+            if (!"".equals(Zbc.getText().toString().trim())) {
+                String string = "白班";
+                String string1 = "夜班";
+                if (string.equals(Zbc.getText().toString().trim())) {
+                    ztwm004_1.setZbc("1");
+                } else if (string1.equals(Zbc.getText().toString().trim())) {
+                    ztwm004_1.setZbc("2");
+                }
+
+            } else {
+                Toast.makeText(getApplicationContext(), "请选择班别!", Toast.LENGTH_SHORT).show();
+            }
+            //标准托盘数量
+            if (!"".equals(Lgmng.getText().toString().trim())) {
+                // 正则判断下是否输入值为数字
+                Pattern p2 = Pattern.compile("([1-9]+[0-9]*|0)(\\\\.[\\\\d]+)?");
+                String ILgmng1 = Lgmng.getText().toString().trim();
+                Matcher matcher = p2.matcher(ILgmng1);
+                if (matcher.matches()) {
+                    Toast.makeText(getApplicationContext(), "请填写准确的托盘数量...", Toast.LENGTH_SHORT).show();
+                }
+                ztwm004_1.setILgmng(Lgmng.getText().toString().trim());
+            } else {
+                Toast.makeText(getApplicationContext(), "请填写准确的托盘数量!", Toast.LENGTH_SHORT).show();
+            }
+            //标签数量
+            if (!"".equals(Menge.getText().toString().trim())) {
+                // 正则判断下是否输入值为数字
+                Pattern p2 = Pattern.compile("^\\+{0,1}[1-9]\\d*");
+                String Menge1 = Menge.getText().toString().trim();
+                Matcher matcher = p2.matcher(Menge1);
+                if (!matcher.matches()) {
+                    Toast.makeText(getApplicationContext(), "请填写准确的数量...", Toast.LENGTH_SHORT).show();
+                }
+                ztwm004_1.setMenge(Menge.getText().toString().trim());
+            } else {
+                Toast.makeText(getApplicationContext(), "请填写准确的数量!", Toast.LENGTH_SHORT).show();
+            }
+            //单位
+            if (!"".equals(Meins.getText().toString().trim())) {
+                if ("个".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("GE");
+                } else if ("盒".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("HE");
+                } else if ("袋".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("DAI");
+                } else if ("公斤".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("KG");
+                } else if ("箱".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("BOX");
+                } else if ("杯".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("BEI");
+                } else if ("套".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("TAO");
+                } else if ("锅".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("GUO");
+                } else if ("包".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("BAO");
+                } else if ("片".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("PIA");
+                } else if ("瓶".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("PIN");
+                } else if ("提".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("TI");
+                } else if ("卷".equals(Meins.getText().toString().trim())) {
+                    ztwm004_1.setMeins("JUA");
+                } else {
+                    ztwm004_1.setMeins("BOX");
+                }
+            } else {
+                Toast.makeText(getApplicationContext(), "请选择单位!", Toast.LENGTH_SHORT).show();
+            }
+            return ztwm004_1;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ztwm004_1;
+    }
+
+    /**
+     * description: 跳转到下一个页面
+     * author: xg.chen
+     * date: 2017/8/3 16:37
+     * version: 1.0
+    */
+    public void goBlueBoothPinterDetailActivity(List<Ztwm004> callbackList1) {
+        try {
+            if (callbackList1.size()==0) {
+                Toast.makeText(getApplicationContext(), "无打印数据，请重新操作！", Toast.LENGTH_SHORT).show();
+            } else {
+                Intent intent = new Intent(BlueBoothPinterActivity.this, BoothActivity.class);
+                Bundle ztwm004 = new Bundle();
+                //托盘编码
+                ztwm004.putString("IZipcode", IZipcode.getText().toString().trim());
+                //ERP编号
+                ztwm004.putString("Charg", Charg.getText().toString().trim());
+                //入库时间
+                ztwm004.putString("Zproddate", Zproddate.getText().toString().trim());
+                //工厂
+                ztwm004.putString("Werks", Werks.getText().toString().trim());
+                //客流码
+                ztwm004.putString("Zkurno", Zkurno.getText().toString().trim());
+                //班别
+                ztwm004.putString("Zbc", Zbc.getText().toString().trim());
+                //线别
+                ztwm004.putString("Zlinecode", Zlinecode.getText().toString().trim());
+                //物料码
+                ztwm004.putString("Matnr", Matnr.getText().toString().trim());
+                //数量
+                ztwm004.putString("Menge", Menge.getText().toString().trim());
+                //单位转换成汉字
+                ztwm004.putString("Meins", Meins.getText().toString().trim());
+                //生产日期
+                ztwm004.putString("Zgrdate", Zgrdate.getText().toString().trim());
+                //物料名称
+                ztwm004.putString("EMaktx", EMaktx.getText().toString().trim());
+                //设置客户名
+                ztwm004.putString("EName1", EName1.getText().toString().trim());
+                ztwm004.putString("Lgmng", Lgmng.getText().toString().trim());
+                List<String> charglist = new ArrayList<>();
+                if (callbackList1.size() != 0) {
+                    for (int j = 0; j < callbackList1.size(); j++) {
+                        charglist.add(callbackList1.get(j).getCharg());
+                    }
+                }
+                ztwm004.putString("chargList", String.valueOf(charglist));
+                List<String> zipcodelist = new ArrayList<>();
+                if (callbackList1.size() != 0) {
+                    for (int i = 0; i < callbackList1.size(); i++) {
+                        zipcodelist.add(callbackList1.get(i).getZipcode());
+                    }
+                }
+                ztwm004.putString("zipcodeList", String.valueOf(zipcodelist));
+                intent.putExtras(ztwm004);
+                startActivity(intent);
+                overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
     /**
      * description: 生成托盘编码
@@ -548,9 +641,16 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<Ztwm004> result) {
             dismissWaitingDialog();
+
+            callbackList = result.get(0).getZtwm004s();
+            goBlueBoothPinterDetailActivity(callbackList);
+
+            List<String> zipcodelist = new ArrayList<>();
             if (result.size() != 0) {
-                Charg.setText(result.get(0).getCharg());
-                IZipcode.setText(result.get(0).getZipcode());
+                for (int i = 0; i < callbackList.size(); i++) {
+                    zipcodelist.add(callbackList.get(i).getZipcode());
+                }
+                IZipcode.setText(zipcodelist.get(0) + ",...");
             } else {
                 Toast.makeText(getApplicationContext(), "连接超时...退出稍后重试...", Toast.LENGTH_SHORT).show();
             }
@@ -583,6 +683,8 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
             dismissWaitingDialog();
             if (result.size() != 0) {
                 EMaktx.setText(result.get(0).getEMaktx());
+                String meins1 = result.get(0).getMeins();
+                Meins.setText(map.get(meins1));
             } else {
                 Toast.makeText(getApplicationContext(), "连接超时...退出稍后重试...", Toast.LENGTH_SHORT).show();
             }
@@ -606,16 +708,16 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
             public void handle(String time) { // 回调接口，获得选中的时间
                 Zproddate.setText(time.split(" ")[0]);
             }
-        }, "2010-01-01 00:00", now); // 初始化日期格式请用：yyyy-MM-dd HH:mm，否则不能正常运行
+        }, "2010-01-01 00:00", "2099-01-01 00:00"); // 初始化日期格式请用：yyyy-MM-dd HH:mm，否则不能正常运行
         zproddateDatePicker.showSpecificTime(false); // 不显示时和分false
-        zproddateDatePicker.setIsLoop(false); // 不允许循环滚动*/
+        zproddateDatePicker.setIsLoop(true); // 不允许循环滚动*/
 
         zgrdateDatePicker = new DatePicker(this, new DatePicker.ResultHandler() {
             @Override
             public void handle(String time) { // 回调接口，获得选中的时间
                 Zgrdate.setText(time.split(" ")[0]);
             }
-        }, "2010-01-01 00:00", now); // 初始化日期格式请用：yyyy-MM-dd HH:mm，否则不能正常运行
+        }, "2010-01-01 00:00", "2099-01-01 00:00"); // 初始化日期格式请用：yyyy-MM-dd HH:mm，否则不能正常运行
         zgrdateDatePicker.showSpecificTime(false); // 显示时和分true
         zgrdateDatePicker.setIsLoop(true); // 允许循环滚动
     }

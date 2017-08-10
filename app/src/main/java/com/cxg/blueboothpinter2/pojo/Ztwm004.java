@@ -5,6 +5,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**a
  * 返回值实体类
@@ -65,12 +66,22 @@ public class Ztwm004 implements Serializable {
     private String EName1;//客流码名称
     @DatabaseField
     private String EName2;//供应商名称
+    @DatabaseField
+    private String ILgmng;
+    @DatabaseField
+    private String IZlocco;
+    @DatabaseField
+    private String ItZipcode;
+
+    private List<String> charglist;
+    private List<String> zipcodelist;
+    private List<Ztwm004> ztwm004s;
 
     public Ztwm004() {
         super();
     }
 
-    public Ztwm004(String mandt, String zipcode, String charg, String zcupno, String werks, String zkurno, String zbc, String zlinecode, String matnr, String zproddate, String zinstock, String zoutstock, String mblnr, String mjahr, String menge, String meins, String tanum, String zptflg, String zgrdate, String zlichn, String lifnr, String znum, String zqcnum, String EMaktx, String EName1, String EName2) {
+    public Ztwm004(String mandt, String zipcode, String charg, String zcupno, String werks, String zkurno, String zbc, String zlinecode, String matnr, String zproddate, String zinstock, String zoutstock, String mblnr, String mjahr, String menge, String meins, String tanum, String zptflg, String zgrdate, String zlichn, String lifnr, String znum, String zqcnum, String EMaktx, String EName1, String EName2, String ILgmng, String IZlocco, String itZipcode) {
         Mandt = mandt;
         Zipcode = zipcode;
         Charg = charg;
@@ -97,6 +108,57 @@ public class Ztwm004 implements Serializable {
         this.EMaktx = EMaktx;
         this.EName1 = EName1;
         this.EName2 = EName2;
+        this.ILgmng = ILgmng;
+        this.IZlocco = IZlocco;
+        ItZipcode = itZipcode;
+    }
+
+    public List<String> getCharglist() {
+        return charglist;
+    }
+
+    public void setCharglist(List<String> charglist) {
+        this.charglist = charglist;
+    }
+
+    public List<String> getZipcodelist() {
+        return zipcodelist;
+    }
+
+    public void setZipcodelist(List<String> zipcodelist) {
+        this.zipcodelist = zipcodelist;
+    }
+
+    public List<Ztwm004> getZtwm004s() {
+        return ztwm004s;
+    }
+
+    public void setZtwm004s(List<Ztwm004> ztwm004s) {
+        this.ztwm004s = ztwm004s;
+    }
+
+    public String getILgmng() {
+        return ILgmng;
+    }
+
+    public void setILgmng(String ILgmng) {
+        this.ILgmng = ILgmng;
+    }
+
+    public String getIZlocco() {
+        return IZlocco;
+    }
+
+    public void setIZlocco(String IZlocco) {
+        this.IZlocco = IZlocco;
+    }
+
+    public String getItZipcode() {
+        return ItZipcode;
+    }
+
+    public void setItZipcode(String itZipcode) {
+        ItZipcode = itZipcode;
     }
 
     public String getEMaktx() {
