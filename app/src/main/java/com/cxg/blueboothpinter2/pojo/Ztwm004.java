@@ -76,6 +76,7 @@ public class Ztwm004 implements Serializable {
     private List<String> charglist;
     private List<String> zipcodelist;
     private List<Ztwm004> ztwm004s;
+    private String message;
 
     public Ztwm004() {
         super();
@@ -111,6 +112,14 @@ public class Ztwm004 implements Serializable {
         this.ILgmng = ILgmng;
         this.IZlocco = IZlocco;
         ItZipcode = itZipcode;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public List<String> getCharglist() {

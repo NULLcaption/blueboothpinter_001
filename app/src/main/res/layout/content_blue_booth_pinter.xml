@@ -158,6 +158,19 @@
 
                         <requestFocus />
                     </EditText>
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginTop="5dp"
+                        android:textSize="16sp" />
 
                     <TextView
                         android:id="@+id/EName1"
@@ -167,9 +180,8 @@
                         android:layout_marginTop="5dp"
                         android:layout_weight="1.70"
                         android:inputType="text"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        android:visibility="gone">
+                        android:textColor="@android:color/holo_blue_dark"
+                        android:textSize="18sp">
 
                         <requestFocus />
                     </TextView>

@@ -21,6 +21,9 @@ import com.cxg.blueboothpinter2.utils.MessageBox;
 import com.cxg.blueboothpinter2.utils.StatusBox;
 import com.cxg.blueboothpinter2.utils.lable_sdk;
 
+import org.apache.commons.lang.StringUtils;
+
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +47,7 @@ public class BoothActivity extends AppCompatActivity {
     public MessageBox megBox;
 
     private Ztwm004 ztwm004;
+    public static String ErrorMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +74,7 @@ public class BoothActivity extends AppCompatActivity {
         /*循环多张打印*/
         Button1.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View arg0) {
-                Print1(SelectedBDAddress, ztwm004);
+                Print1_1(SelectedBDAddress, ztwm004);
             }
         });
 
@@ -198,38 +202,25 @@ public class BoothActivity extends AppCompatActivity {
         return localArrayList;
     }
 
-
     /**
-     * 循环多张打印
-     *
+     * 新版的循环打印张打印
      * @param BDAddress
+     * @param ztwm004
      */
-    private void Print1(String BDAddress, Ztwm004 ztwm004) {
+    public void Print1_1(String BDAddress,Ztwm004 ztwm004) {
         statusBox.Show("正在打印...");
         if (!Bluetooth.OpenPrinter(BDAddress)) {
-            showMessage(Bluetooth.ErrorMessage);
-            Bluetooth.close();
+            Toast.makeText(this, Bluetooth.ErrorMessage, Toast.LENGTH_LONG).show();
             statusBox.Close();
             return;
         }
-        // create page
         List localList = ztwm004.getZipcodelist();
-        lable_sdk.SelectPage(0);
-        lable_sdk.ClearPage();
-        lable_sdk.SelectPage(1);
-        lable_sdk.ClearPage();
-        lable_sdk.SetPageSize(83 * 8, 72 * 8);
-        lable_sdk.ErrorConfig(true);
         for (int i = 0; i < localList.size(); i++) {
             String str = (String) localList.get(i);
-            DrawContent(ztwm004, str);// content
-            lable_sdk.PrintPage(0x04, 10, false);
-            lable_sdk.ClearPage();
+            DrawContent_1(ztwm004,str);
         }
         Bluetooth.close();
-        statusBox.Close();
-    }// print1
-
+    }
 
     /**
      * 打印数据输出时间设置
@@ -256,6 +247,134 @@ public class BoothActivity extends AppCompatActivity {
             return -1;
         }
         return status[0];
+    }
+
+    /**
+     * 新版本页面布局
+     *
+     * @param ztwm004
+     */
+    public void DrawContent_1(Ztwm004 ztwm004,String zipcode){
+        try {
+            Bluetooth.SPPWrite(new byte[]{0x1B, 0x40}); // 打印机复位
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[]{0x1B, 0x33, 0x00}); // 设置行间距为0
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite("\n".getBytes("GBK"));
+            zp_realtime_status(1000);
+            //加粗变大内容
+            Bluetooth.SPPWrite(new byte[]{0x1B, 0x61, 0x00}); // 设置不居中
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[]{0x1d, 0x21, 0x01}); // 设置倍高
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1D, 0x21, 0x11 }); // 3倍字体大小
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x45, 0x01 }); // 粗体
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x24, 0x28, (byte) 0x80 }); // 设置绝对打印位置5mm，80表示00
+            zp_realtime_status(100);
+            Bluetooth.SPPWrite(String.format("客户:" + ztwm004.getZkurno()+"\n").getBytes("GBK"));
+            zp_realtime_status(1000);
+            if (StringUtils.isNotEmpty(ztwm004.getEName1())) {
+                Bluetooth.SPPWrite(String.format(ztwm004.getEName1()+"\n").getBytes("GBK"));
+                zp_realtime_status(1000);
+            } else {
+                Bluetooth.SPPWrite(String.format("         \n").getBytes("GBK"));
+                zp_realtime_status(1000);
+            }
+
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x21, 0x00 }); // 还原默认字体大小，取消下划线，取消粗体模式
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[]{0x1d, 0x21, 0x01}); // 设置倍高
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x45, 0x01 }); // 粗体
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x24, 0x28, (byte) 0x80 }); // 设置绝对打印位置5mm，80表示00
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(String.format("班别:" + ztwm004.getZbc()+"\n").getBytes("GBK"));
+            zp_realtime_status(1000);
+
+            Bluetooth.SPPWrite(new byte[] { 0x1D, 0x21, 0x11 }); // 3倍字体大小
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x45, 0x01 }); // 粗体
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[]{0x1B, 0x61, 0x00}); // 设置不居中
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[]{0x1d, 0x21, 0x11}); // 设置倍高
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x24, 0x28, (byte) 0x80 }); // 设置绝对打印位置5mm，80表示00
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(String.format("物料编号:"+ztwm004.getMatnr()+"\n").getBytes("GBK"));
+            zp_realtime_status(1000);
+
+            Bluetooth.SPPWrite(new byte[] { 0x1D, 0x21, 0x11 }); // 3倍字体大小
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x45, 0x01 }); // 粗体
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[]{0x1B, 0x61, 0x00}); // 设置不居中
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[]{0x1d, 0x21, 0x11}); // 设置倍高
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x24, 0x28, (byte) 0x80 }); // 设置绝对打印位置5mm，80表示00
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(String.format(ztwm004.getEMaktx()+"\n").getBytes("GBK"));
+            zp_realtime_status(1000);
+
+
+            Bluetooth.SPPWrite(new byte[]{0x1d, 0x21, 0x01}); // 设置倍高
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x45, 0x01 }); // 粗体
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x24, 0x28, (byte) 0x80 }); // 设置绝对打印位置5mm，80表示00
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(String.format("生产日期:" + ztwm004.getZgrdate()+"\n").getBytes("GBK"));
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[]{0x1d, 0x21, 0x01}); // 设置倍高
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x45, 0x01 }); // 粗体
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x24, 0x28, (byte) 0x80 }); // 设置绝对打印位置5mm，80表示00
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(String.format("入库日期:" + ztwm004.getZproddate()+"\n").getBytes("GBK"));
+            zp_realtime_status(1000);
+
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x21, 0x00 }); // 还原默认字体大小，取消下划线，取消粗体模式
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[]{0x1d, 0x21, 0x01}); // 设置倍高
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x24, 0x28, (byte) 0x80 }); // 设置绝对打印位置5mm，80表示00
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(String.format("ERP批次号:" + ztwm004.getCharg()+"\n").getBytes("GBK"));
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[]{0x1d, 0x21, 0x01}); // 设置倍高
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1B, 0x24, 0x28, (byte) 0x80 }); // 设置绝对打印位置5mm，80表示00
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(String.format("数量:" + ztwm004.getILgmng() + " " + ztwm004.getMeins()+"\n").getBytes("GBK"));
+            zp_realtime_status(1000);
+            // 打印code128条码
+            Bluetooth.SPPWrite(new byte[]{0x1b, 0x61, 0x01}); // 设置居中
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[]{0x1d, 0x21, 0x01}); // 设置倍高
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1d, 0x48, 0x02 }); // 设置条码内容打印在条码下方
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1d, 0x77, 0x03 }); // 设置条码宽度0.375
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1d, 0x68, 0x79 }); // 设置条码高度64
+            zp_realtime_status(1000);
+            Bluetooth.SPPWrite(new byte[] { 0x1D, 0x6B, 0x08 });
+            Bluetooth.SPPWrite(String.format(zipcode+"\0").getBytes("GBK"));
+            zp_realtime_status(1000);
+
+            Bluetooth.SPPWrite("\n\n\n\n".getBytes("GBK"));
+            if (zp_realtime_status(5000) > 0) {
+                showMessage(ErrorMessage);
+            }
+            statusBox.Close();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

@@ -28,6 +28,8 @@ import com.cxg.blueboothpinter2.query.DataProviderFactory;
 import com.cxg.blueboothpinter2.utils.DatePicker;
 import com.cxg.blueboothpinter2.utils.ExitApplication;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -80,7 +82,7 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
         //数据
         initData();
 
-        Werks.setText("湖州工厂");
+        Werks.setText("成都工厂");
 
         ExitApplication.getInstance().addActivity(this);
     }
@@ -97,6 +99,7 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
         //客流码
         Zkurno = (EditText) findViewById(R.id.Zkurno);
         Zkurno.setInputType(InputType.TYPE_NULL);
+        Zkurno.setOnEditorActionListener(EnterListenter);
         //班别
         Zbc = (EditText) findViewById(R.id.Zbc);
         Zbc.setOnClickListener(BtnClicked);
@@ -114,8 +117,10 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
         Zproddate.setOnClickListener(BtnClicked);
         //标准托盘数量
         Lgmng = (EditText) findViewById(R.id.ILgmng);
+        Lgmng.setInputType(InputType.TYPE_NULL);
         //标签数量
         Menge = (EditText) findViewById(R.id.Menge);
+        Menge.setInputType(InputType.TYPE_NULL);
         //单位
         Meins = (EditText) findViewById(R.id.Meins);
         Meins.setOnClickListener(BtnClicked);
@@ -208,6 +213,32 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                             new getEMaktxTask().execute(Matnr.getText().toString().trim());
                         } else {
                             Toast.makeText(getApplicationContext(), "请输入物料码,然后查询即可!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    break;
+                case R.id.Zkurno:
+                    if (actionId == EditorInfo.IME_ACTION_SEND
+                            || actionId == EditorInfo.IME_ACTION_DONE
+                            || actionId == EditorInfo.IME_ACTION_GO
+                            || actionId == EditorInfo.IME_ACTION_NEXT
+                            || (event != null && KeyEvent.KEYCODE_ENTER == event.getKeyCode()
+                            && KeyEvent.ACTION_DOWN == event.getAction())) {
+                        if (!"".equals(Zkurno.getText().toString().trim())) {
+                            String Zkurno2 = Zkurno.getText().toString().trim();
+                            if ("0000".equals(Zkurno2)) {
+
+                            } else {
+                                // 正则判断下是否输入值为数字
+                                Pattern p2 = Pattern.compile("\\d");
+                                String Zkurno1 = Zkurno.getText().toString().trim();
+                                Matcher matcher = p2.matcher(Zkurno1);
+                                if (matcher.matches()) {
+                                    Toast.makeText(getApplicationContext(), "请填写准确的客流码...", Toast.LENGTH_SHORT).show();
+                                }
+                                new getEName1Task().execute(Zkurno.getText().toString().trim());
+                            }
+                        } else {
+                            Toast.makeText(getApplicationContext(), "请输入客流码,然后查询即可!", Toast.LENGTH_SHORT).show();
                         }
                     }
                     break;
@@ -398,13 +429,18 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                     break;
                 case R.id.printer:
                     Ztwm004 ztwm004_2 = setZtwm004_001();
-                    try {
-                        new getZipcodeTask().execute(ztwm004_2);
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    if (StringUtils.isEmpty(ztwm004_2.getMessage())) {
+                        try {
+                            new getZipcodeTask().execute(ztwm004_2);
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        Toast.makeText(getApplicationContext(), "正在后台生成数据,请稍后!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), ztwm004_2.getMessage(), Toast.LENGTH_SHORT).show();
+                        break;
                     }
-                    Toast.makeText(getApplicationContext(), "正在后台生成数据,请稍后!", Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     break;
@@ -489,10 +525,10 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
             //标准托盘数量
             if (!"".equals(Lgmng.getText().toString().trim())) {
                 // 正则判断下是否输入值为数字
-                Pattern p2 = Pattern.compile("([1-9]+[0-9]*|0)(\\\\.[\\\\d]+)?");
+                Pattern p2 = Pattern.compile("^\\+{0,1}[1-9]\\d*");
                 String ILgmng1 = Lgmng.getText().toString().trim();
                 Matcher matcher = p2.matcher(ILgmng1);
-                if (matcher.matches()) {
+                if (!matcher.matches()) {
                     Toast.makeText(getApplicationContext(), "请填写准确的托盘数量...", Toast.LENGTH_SHORT).show();
                 }
                 ztwm004_1.setILgmng(Lgmng.getText().toString().trim());
@@ -582,7 +618,7 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                 ztwm004.putString("Zlinecode", Zlinecode.getText().toString().trim());
                 //物料码
                 ztwm004.putString("Matnr", Matnr.getText().toString().trim());
-                //数量
+                //标签数量
                 ztwm004.putString("Menge", Menge.getText().toString().trim());
                 //单位转换成汉字
                 ztwm004.putString("Meins", Meins.getText().toString().trim());
@@ -592,7 +628,9 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                 ztwm004.putString("EMaktx", EMaktx.getText().toString().trim());
                 //设置客户名
                 ztwm004.putString("EName1", EName1.getText().toString().trim());
+                //标准托盘数量
                 ztwm004.putString("Lgmng", Lgmng.getText().toString().trim());
+
                 List<String> charglist = new ArrayList<>();
                 if (callbackList1.size() != 0) {
                     for (int j = 0; j < callbackList1.size(); j++) {
@@ -600,6 +638,7 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                     }
                 }
                 ztwm004.putString("chargList", String.valueOf(charglist));
+
                 List<String> zipcodelist = new ArrayList<>();
                 if (callbackList1.size() != 0) {
                     for (int i = 0; i < callbackList1.size(); i++) {
@@ -607,6 +646,7 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                     }
                 }
                 ztwm004.putString("zipcodeList", String.valueOf(zipcodelist));
+
                 intent.putExtras(ztwm004);
                 startActivity(intent);
                 overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
@@ -685,6 +725,36 @@ public class BlueBoothPinterActivity extends AppCompatActivity {
                 EMaktx.setText(result.get(0).getEMaktx());
                 String meins1 = result.get(0).getMeins();
                 Meins.setText(map.get(meins1));
+            } else {
+                Toast.makeText(getApplicationContext(), "连接超时...退出稍后重试...", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    /**
+     * description: 获取客户名称
+     * author: xg.chen
+     * date: 2017/6/28 13:42
+     * version: 1.0
+     */
+    private class getEName1Task extends AsyncTask<String, Integer, List<Ztwm004>> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            showWaitingDialog();
+        }
+
+        @Override
+        protected List<Ztwm004> doInBackground(String... params) {
+            String string = params[0];
+            return DataProviderFactory.getProvider().getEName1(string);
+        }
+
+        @Override
+        protected void onPostExecute(List<Ztwm004> result) {
+            dismissWaitingDialog();
+            if (result.size() != 0) {
+                EName1.setText(result.get(0).getEName1());
             } else {
                 Toast.makeText(getApplicationContext(), "连接超时...退出稍后重试...", Toast.LENGTH_SHORT).show();
             }

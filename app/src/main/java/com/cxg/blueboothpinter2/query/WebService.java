@@ -145,4 +145,29 @@ public class WebService implements IDataProvider {
         return ztwm004List;
     }
 
+    @Override
+    public List<Ztwm004> getEName1(String string) {
+        //处理后的类型具体的返回值
+        List<Ztwm004> ztwm004List = new ArrayList<>();
+        try {
+            HashMap<String,String> properties = new HashMap<>();
+            properties.put("IZkurno",string);
+            List<Object> list = WebServiceUtils.callWebServiceFor001(WebServiceUtils.URL_001, WebServiceUtils.METHOD_NAME_001, properties);
+            if (list.size() != 0){
+                Ztwm004 ztwm004 = new Ztwm004();
+                String anyType = "anyType{}";
+                if (!anyType.equals(list.get(1).toString())){
+                    ztwm004.setEName1(list.get(1).toString());
+                } else {
+                    ztwm004.setEName1("");
+                }
+                ztwm004List.add(ztwm004);
+            }
+            return ztwm004List;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ztwm004List;
+    }
+
 }

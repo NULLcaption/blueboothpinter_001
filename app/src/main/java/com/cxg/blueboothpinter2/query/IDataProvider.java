@@ -42,4 +42,12 @@ public interface IDataProvider {
      * @return
      */
     List<Ztwm004> getZipcode(Ztwm004 ztwm004);
+
+    /**
+     * 获取客户客户名称
+     *
+     * @param string
+     * @return
+     */
+    List<Ztwm004> getEName1(String string);
 }
