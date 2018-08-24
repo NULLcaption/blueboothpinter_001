@@ -119,11 +119,11 @@ public class WebService implements IDataProvider {
             properties.setMenge(ztwm004.getMenge());//数量
             properties.setWerks(ztwm004.getWerks());
             properties.setZbc(ztwm004.getZbc());
-            properties.setZgrdate(ztwm004.getZgrdate());
+            properties.setZgrdate(ztwm004.getZproddate());//入库日期
             properties.setZkurno(ztwm004.getZkurno());
             properties.setZlinecode(ztwm004.getZlinecode());
-            properties.setIZlocco(ztwm004.getZcupno());//客流码
-            properties.setZproddate(ztwm004.getZproddate());
+            properties.setIZlocco(ztwm004.getZkurno());//客流码
+            properties.setZproddate(ztwm004.getZgrdate());//生产日期
             properties.setItZipcode(ztwm004.getItZipcode());
 
             //通过webservice获取到的返回值

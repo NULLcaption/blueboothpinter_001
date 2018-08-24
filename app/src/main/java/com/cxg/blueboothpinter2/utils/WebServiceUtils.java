@@ -37,14 +37,14 @@ public class WebServiceUtils {
     public static String SOAP_ACTION_001 = NAMESPACE + "/" + METHOD_NAME_001;
     public static String SOAP_ACTION_007 = NAMESPACE + "/" + METHOD_NAME_007;
     //请求的webservice路径
-    public static final String URL_001 = "http://192.168.0.12:8000/sap/bc/srt/rfc/sap/zwm/800/zwm/binding?sap-client=800&sap-user=ABAPRFC&sap-password=xpp2@12";
-    public static final String URL_004 = "http://192.168.0.12:8000/sap/bc/srt/rfc/sap/zwmits4/800/zwmits4/binding?sap-client=800&sap-user=ABAPRFC&sap-password=xpp2@12";
-    public static final String URL_007 = "http://192.168.0.12:8000/sap/bc/srt/rfc/sap/zwmits7/800/zwmits7/binding?sap-client=800&sap-user=ABAPRFC&sap-password=xpp2@12";
+//    public static final String URL_001 = "http://192.168.0.12:8000/sap/bc/srt/rfc/sap/zwm/800/zwm/binding?sap-client=800&sap-user=ABAPRFC&sap-password=xpp2@12";
+//    public static final String URL_004 = "http://192.168.0.12:8000/sap/bc/srt/rfc/sap/zwmits4/800/zwmits4/binding?sap-client=800&sap-user=ABAPRFC&sap-password=xpp2@12";
+//    public static final String URL_007 = "http://192.168.0.12:8000/sap/bc/srt/rfc/sap/zwmits7/800/zwmits7/binding?sap-client=800&sap-user=ABAPRFC&sap-password=xpp2@12";
 
     //测试机路径
-//    public static final String URL_004 = "http://192.168.0.16:8000/sap/bc/srt/rfc/sap/zwmits4/600/zwmits4/binding?sap-client=600&sap-user=abaprfc&sap-password=xpp2@12";
-//    public static final String URL_001 = "http://192.168.0.16:8000/sap/bc/srt/rfc/sap/zwm/600/zwm/binding?sap-client=600&sap-user=abaprfc&sap-password=xpp2@12";
-//    public static final String URL_007 = "http://192.168.0.16:8000/sap/bc/srt/rfc/sap/zwmits7/600/zwmits7/binding?sap-client=600&sap-user=abaprfc&sap-password=xpp2@12";
+    public static final String URL_004 = "http://192.168.0.16:8000/sap/bc/srt/rfc/sap/zwmits4/700/zwmits4/binding?sap-client=700&sap-user=rfc&sap-password=poiuyt";
+    public static final String URL_001 = "http://192.168.0.16:8000/sap/bc/srt/rfc/sap/zwm/700/zwm/binding?sap-client=700&sap-user=rfc&sap-password=poiuyt";
+    public static final String URL_007 = "http://192.168.0.16:8000/sap/bc/srt/rfc/sap/zwmits7/700/zwmits7/binding?sap-client=700&sap-user=rfc&sap-password=poiuyt";
 
     /**
      * 请求ZwmRfcIts002接口生成托盘编码
@@ -65,10 +65,10 @@ public class WebServiceUtils {
         request.addProperty("IMenge",properties.getMenge());//数量
         request.addProperty("IWerks",properties.getWerks());//工厂
         request.addProperty("IZbc",properties.getZbc());//班别
-        request.addProperty("IZgrdate",properties.getZgrdate());//生产日期
+        request.addProperty("IZgrdate",properties.getZproddate());//入库日期
         request.addProperty("IZline",properties.getZlinecode());//线别
         request.addProperty("IZlocco",properties.getIZlocco());//客流码
-        request.addProperty("IZproddate",properties.getZproddate());//库存日期
+        request.addProperty("IZproddate",properties.getZgrdate());//生产日期
         request.addProperty("ItZipcode",properties.getItZipcode());
 
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER10);
@@ -107,6 +107,11 @@ public class WebServiceUtils {
      */
     public static List<Object> parseSoapObject002(SoapObject result) {
         List<Object> list = new ArrayList<>();
+
+        String EMessage = result.getProperty("EMessage").toString();
+        System.out.println(EMessage);
+        String EType = result.getProperty("EType").toString();
+        System.out.println(EType);
 
         SoapObject provinceSoapObject1 = (SoapObject) result.getProperty("ItZipcode");
         if (provinceSoapObject1 == null) {
@@ -185,9 +190,9 @@ public class WebServiceUtils {
     public static List<Object> parseSoapObject(SoapObject result) {
         List<Object> list = new ArrayList<>();
         String EMaktx = result.getProperty("EMaktx").toString();
-        String EFrtme = result.getProperty("EFrtme").toString();
+        String EName1 = result.getProperty("EName1").toString();
         list.add(EMaktx);
-        list.add(EFrtme);
+        list.add(EName1);
         return list;
     }
 
