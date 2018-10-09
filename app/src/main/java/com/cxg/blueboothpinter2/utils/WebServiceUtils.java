@@ -36,9 +36,9 @@ public class WebServiceUtils {
     public static String SOAP_ACTION_001 = NAMESPACE + "/" + METHOD_NAME_001;
     public static String SOAP_ACTION_002 = NAMESPACE + "/" + METHOD_NAME_002;
     //请求的webservice路径
-    public static final String URL_004 = "http://192.168.0.16:8000/sap/bc/srt/rfc/sap/zwmits4/700/zwmits4/binding?sap-client=700&sap-user=rfc&sap-password=poiuyt";
-    public static final String URL_001 = "http://192.168.0.16:8000/sap/bc/srt/rfc/sap/zwm/700/zwm/binding?sap-client=700&sap-user=rfc&sap-password=poiuyt";
-    public static final String URL_002 = "http://192.168.0.16:8000/sap/bc/srt/rfc/sap/zwmits2/700/zwmits2/binding?sap-client=700&sap-user=rfc&sap-password=poiuyt";
+    public static final String URL_004 = "http://sap/bc/srt/rfc/sap/zwmits4/700/zwmits4/binding";
+    public static final String URL_001 = "http://sap/bc/srt/rfc/sap/zwm/700/zwm/binding";
+    public static final String URL_002 = "http://sap/bc/srt/rfc/sap/zwmits2/700/zwmits2/binding";
 
     /**
      * 请求ZwmRfcIts002接口生成托盘编码
